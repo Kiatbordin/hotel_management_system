@@ -1,14 +1,13 @@
 class Hotel {
     constructor() {
-        /* Set default minimum floor and room per floor */
+        /* Set default minimum floor and room per floor and total room numbers */
         this.rooms = [];
         this.keycards = [];
+        this.totalRoom = 0;
     }
 
     createRooms(floor, roomPerFloor) {
-
-        const total_room = floor * roomPerFloor;
-
+        this.totalRoom = floor * roomPerFloor;
         /* Create rooms */
         for(let i=0;i<=floor-1;i++) {
             this.rooms.push([]);
@@ -26,7 +25,7 @@ class Hotel {
             }
         }
         /* create Keycards */
-        for(let card=1;card<=total_room;card++) this.keycards.push(card);
+        for(let card=1;card<=this.totalRoom;card++) this.keycards.push(card);
         console.log(`Hotel created with ${floor} floor(s), ${roomPerFloor} room(s) per floor.`);
     }
 
@@ -34,7 +33,7 @@ class Hotel {
         if(roomNumber && guestName && age) {
             
             const floor = Math.floor(roomNumber/100);
-
+            if(roomNumber < 100) return console.log(`The room number should be at least 3 digits.`);
             if(floor < 1 || floor > this.rooms.length) return console.log(`There is no floor level ${floor} in the hotel.`);
 
             const roomIndex = this.rooms[floor-1].findIndex( room => room.number == roomNumber );
@@ -103,7 +102,13 @@ class Hotel {
     }
 
     checkout(keycardNumber,checkoutName) {
-        /* Check all keycards inhand from the guestname */
+        /* The keycard number should be more than 0 and less than equal the total room. */
+        if(keycardNumber<1) return console.log(`The keycard number should be more than 0.`);
+        else if(keycardNumber > this.totalRoom) return console.log(`The total room number is ${this.totalRoom}. The Keycard number is wrong.`);
+        /* Check all keycards on the admin desk */
+        /* If one of the cards that hold by admin match the checkout keycard, this mean that the keycard number is wrong. */
+        if(this.keycards.findIndex(card => card === keycardNumber) !== -1) return console.log(`The keycard number ${keycardNumber} is currently hold by admin. Please return the booked room keycard.`);
+
         /* Then get the room number for checkout */
         let checkoutRoomNumber ;
         let roomOwner ;
@@ -122,6 +127,8 @@ class Hotel {
                 roomOwner = room.guest.name;
             }
         }))
+        /* If checkoutRoomNumber is founded by Keycard that mean succesfully checkout. */
+        /* If not, Tell the guest who is the card holder. */
         checkoutRoomNumber ? console.log(`Room ${checkoutRoomNumber} is checkout.`) : console.log(`Only ${roomOwner} can checkout with keycard number ${keycardNumber}.`);
     }
 
@@ -151,7 +158,7 @@ class Hotel {
 
     listAvailableRooms() {
         const availableRooms = this.rooms.map(floor => floor.filter( room => room.booked === false));
-        /* Create displaying array for display the available rooms in one line. */
+        /* Create displaying array for display the available 'rooms number' in one line. */
         const remainingRooms = [];
         for(let i=0;i<availableRooms.length;i++) availableRooms[i].forEach( room => remainingRooms.push(room.number));
         remainingRooms.length!=0 ? console.log(remainingRooms.join(", ")) : console.log('There is no available room now.');
@@ -161,7 +168,7 @@ class Hotel {
         /* Filter only name and defined value from 2D array */
         const guestNames = this.rooms.map(floor => floor.map( room => room.guest.name ))
                             .map( floor => floor.filter( roomname => roomname !== undefined ) );
-        /* Push the value to new displaying array then use set for filter only unique values */
+        /* Push the guest name to new displaying array then use set for filter only unique values */
         let guestNameArr = [];
         guestNames.forEach( floor =>  floor.forEach( name => guestNameArr.push(name) ));     
         guestNameArr = [...new Set(guestNameArr)];
@@ -171,6 +178,7 @@ class Hotel {
     listGuestByAge(operator,ageCondition) {
         /* Filter only name and defined value from 2D array */
         let names = [];
+        /* Check if the age is pass the condition, then add the name to displaying array */
         for(let i=0;i<=this.rooms.length-1;i++) {
             this.rooms[i].forEach( room => {
                 const isPass = operator(room.guest.age,ageCondition);
@@ -212,6 +220,7 @@ class Hotel {
         }
     }
 
+    /* For Trouble shooting */
     getInfo() {
         this.rooms.length!=0 ? this.rooms.forEach( floor => console.log(floor)) : console.log("There is no room created.");
         this.keycards.length!=0 ? console.log("Remaining keycards are " + this.keycards) : console.log("No keycard left.");

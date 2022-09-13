@@ -111,7 +111,7 @@ function main() {
           return;
       }
     });
-    // hotel.getInfo();
+    // hotel.getInfo(); // For trouble shooting
   }
 
 
